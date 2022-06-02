@@ -1,0 +1,28 @@
+{
+  "name": "example",
+  "private": "true",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "rollup -c",
+    "run": "gjs -m dist/index.js"
+  },
+  "keywords": [],
+  "author": "Nicolai Moraru <dot.nick.dot.messing@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@gnome-vue/core": "workspace:*",
+    "@vue/runtime-core": "^3.2.36"
+  },
+  "devDependencies": {
+    "@rollup/plugin-alias": "^3.1.9",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-replace": "^4.0.0",
+    "@vue/compiler-sfc": "^3.2.36",
+    "esbuild": "^0.14.42",
+    "rollup": "^2.75.5",
+    "rollup-plugin-esbuild": "^4.9.1",
+    "rollup-plugin-vue": "^6.0.0"
+  }
+}
