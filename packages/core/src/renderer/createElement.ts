@@ -11,18 +11,11 @@ export const createElement: ROptions['createElement'] = (type, isSVG, isCustomiz
       }
     }
 
-    const el = new Gtk.ApplicationWindow(constructProps)
-    el.show()
-
-    return el
+    return new Gtk.ApplicationWindow(constructProps)
   } else if (type === 'box') {
-    const el = new Gtk.Box()
-    el.show()
-    return el
+    return new Gtk.Box()
   } else if (type === 'button') {
-    const el = new Gtk.Button()
-    el.show()
-    return el
+    return new Gtk.Button()
   }
   throw `Cant create element "${type}" yet`
 }
