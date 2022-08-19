@@ -10,7 +10,14 @@ const projectRootDir = path.resolve(__dirname)
 const bundle = config => ({
   ...config,
   input: 'src/index.ts',
-  external: ['@vue/runtime-core', 'gi://Gtk?version=4.0'],
+  external: [
+    '@vue/runtime-core',
+    'gi://Gtk?version=4.0',
+    'gi://GObject?version=2.0',
+    'gi://Adw?version=1',
+    'gi://Gio?version=2.0',
+    'gi://Gdk?version=4.0',
+  ],
   plugins: [
     alias({
       entries: [{ find: '@', replacement: path.resolve(projectRootDir, 'src') }],

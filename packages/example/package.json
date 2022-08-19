@@ -6,23 +6,25 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "rollup -c",
-    "run": "gjs -m dist/index.js"
+    "run": "GTK_DEBUG=interactive gjs -m dist/index.js"
   },
   "keywords": [],
   "author": "Nicolai Moraru <dot.nick.dot.messing@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "@gnome-vue/core": "workspace:*",
-    "@vue/runtime-core": "^3.2.36"
+    "@vue/runtime-core": "^3.2.37"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^3.1.9",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-replace": "^4.0.0",
-    "@vue/compiler-sfc": "^3.2.36",
-    "esbuild": "^0.14.42",
-    "rollup": "^2.75.5",
-    "rollup-plugin-esbuild": "^4.9.1",
-    "rollup-plugin-vue": "^6.0.0"
+    "@vue/compiler-sfc": "^3.2.37",
+    "esbuild": "^0.15.5",
+    "rollup": "^2.78.0",
+    "rollup-plugin-esbuild": "^4.9.3",
+    "rollup-plugin-styles": "^4.0.0",
+    "rollup-plugin-vue": "^6.0.0",
+    "vue": "^3.2.37"
   }
 }

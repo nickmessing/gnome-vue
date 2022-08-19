@@ -5,32 +5,34 @@
  * If you found a bug fix it in ts-for-gir itself or create a bug report on https://github.com/sammydre/ts-for-gjs
  */
 
-import type * as Gjs from "./Gjs";
-import type Gtk40 from "./Gtk-4.0";
-import type Gsk40 from "./Gsk-4.0";
-import type Gdk40 from "./Gdk-4.0";
-import type GObject20 from "./GObject-2.0";
-import type Graphene10 from "./Graphene-1.0";
-import type Cairo10 from "./cairo-1.0";
-import type PangoCairo10 from "./PangoCairo-1.0";
-import type Pango10 from "./Pango-1.0";
-import type Gio20 from "./Gio-2.0";
-import type GdkPixbuf20 from "./GdkPixbuf-2.0";
-import type GLib20 from "./GLib-2.0";
-import type HarfBuzz00 from "./HarfBuzz-0.0";
-import type GModule20 from "./GModule-2.0";
+import type * as Gjs from "./Gjs.js";
+import type Adw1 from "./Adw-1.js";
+import type Gtk40 from "./Gtk-4.0.js";
+import type Gio20 from "./Gio-2.0.js";
+import type GObject20 from "./GObject-2.0.js";
+import type Gsk40 from "./Gsk-4.0.js";
+import type Gdk40 from "./Gdk-4.0.js";
+import type GLib20 from "./GLib-2.0.js";
+import type Graphene10 from "./Graphene-1.0.js";
+import type Cairo10 from "./cairo-1.0.js";
+import type PangoCairo10 from "./PangoCairo-1.0.js";
+import type Pango10 from "./Pango-1.0.js";
+import type GdkPixbuf20 from "./GdkPixbuf-2.0.js";
+import type HarfBuzz00 from "./HarfBuzz-0.0.js";
+import type GModule20 from "./GModule-2.0.js";
 
 // See also https://github.com/microsoft/TypeScript/blob/main/lib/lib.dom.d.ts
 declare global {
   function print(...args: any[]): void;
   function printerr(...args: any[]): void;
-  function log(message?: string): void;
-  function logError(exception: any, message?: string): void;
+  function log(message: any): void;
+  function logError(exception: object, message?: any): void;
+  function logError(message?: any): void;
 
   interface Console {
     /**
      * Logs a critical message if the condition is not truthy.
-     * {@see console.error()} for additional information.
+     * {@link console.error()} for additional information.
      *
      * @param condition a boolean condition which, if false, causes
      *   the log to print
@@ -50,15 +52,15 @@ declare global {
     clear(): void;
 
     /**
-     * Logs a message with severity equal to {@see GLib.LogLevelFlags.DEBUG}.
+     * Logs a message with severity equal to {@link GLib20.LogLevelFlags.DEBUG}.
      *
      * @param  {...any} data formatting substitutions, if applicable
      */
     debug(...data: any[]): void;
 
     /**
-     * Logs a message with severity equal to {@see GLib.LogLevelFlags.CRITICAL}.
-     * Does not use {@see GLib.LogLevelFlags.ERROR} to avoid asserting and
+     * Logs a message with severity equal to {@link GLib20.LogLevelFlags.CRITICAL}.
+     * Does not use {@link GLib20.LogLevelFlags.ERROR} to avoid asserting and
      * forcibly shutting down the application.
      *
      * @param data formatting substitutions, if applicable
@@ -66,14 +68,14 @@ declare global {
     error(...data: any[]): void;
 
     /**
-     * Logs a message with severity equal to {@see GLib.LogLevelFlags.INFO}.
+     * Logs a message with severity equal to {@link GLib20.LogLevelFlags.INFO}.
      *
      * @param data formatting substitutions, if applicable
      */
     info(...data: any[]): void;
 
     /**
-     * Logs a message with severity equal to {@see GLib.LogLevelFlags.MESSAGE}.
+     * Logs a message with severity equal to {@link GLib20.LogLevelFlags.MESSAGE}.
      *
      * @param data formatting substitutions, if applicable
      */
@@ -110,7 +112,7 @@ declare global {
     /**
      * Logs how many times console.count(label) has been called with a given
      * label.
-     * {@see console.countReset()} for resetting a count.
+     * {@link console.countReset()} for resetting a count.
      *
      * @param label unique identifier for this action
      */
@@ -204,8 +206,7 @@ declare global {
     logDomain: string;
   }
 
-  // TODO: Conflicts with lib.dom.d.ts
-  // const console: Console;
+  const console: Console;
 
   interface BooleanConstructor {
     $gtype: GObject20.GType<boolean>;
@@ -232,7 +233,7 @@ declare global {
    */
   function setTimeout(
     callback: (...args: any[]) => any,
-    delay: number,
+    delay?: number,
     ...args: any[]
   ): GLib20.Source;
 
@@ -244,7 +245,7 @@ declare global {
    */
   function setInterval(
     callback: (...args: any[]) => any,
-    delay: number,
+    delay?: number,
     ...args: any[]
   ): GLib20.Source;
 
@@ -262,38 +263,44 @@ declare global {
 
   const imports: typeof Gjs & {
     gi: {
+      Adw: typeof Adw1;
       Gtk: typeof Gtk40;
+      Gio: typeof Gio20;
+      GObject: typeof GObject20;
       Gsk: typeof Gsk40;
       Gdk: typeof Gdk40;
-      GObject: typeof GObject20;
+      GLib: typeof GLib20;
       Graphene: typeof Graphene10;
       cairo: typeof Cairo10;
       PangoCairo: typeof PangoCairo10;
       Pango: typeof Pango10;
-      Gio: typeof Gio20;
       GdkPixbuf: typeof GdkPixbuf20;
-      GLib: typeof GLib20;
       HarfBuzz: typeof HarfBuzz00;
       GModule: typeof GModule20;
+      versions: {
+        Adw: "1";
+        Gtk: "4.0";
+        Gio: "2.0";
+        GObject: "2.0";
+        Gsk: "4.0";
+        Gdk: "4.0";
+        GLib: "2.0";
+        Graphene: "1.0";
+        cairo: "1.0";
+        PangoCairo: "1.0";
+        Pango: "1.0";
+        GdkPixbuf: "2.0";
+        HarfBuzz: "0.0";
+        GModule: "2.0";
+      };
     };
-    versions: {
-      Gtk: "4.0";
-      Gsk: "4.0";
-      Gdk: "4.0";
-      GObject: "2.0";
-      Graphene: "1.0";
-      cairo: "1.0";
-      PangoCairo: "1.0";
-      Pango: "1.0";
-      Gio: "2.0";
-      GdkPixbuf: "2.0";
-      GLib: "2.0";
-      HarfBuzz: "0.0";
-      GModule: "2.0";
-    };
+    lang: typeof Gjs.Lang;
+    system: typeof Gjs.System;
+    package: typeof Gjs.Package;
+    mainloop: typeof Gjs.Mainloop;
     searchPath: string[];
   };
 }
 
-export { imports };
-export default imports;
+declare const _imports: typeof imports;
+export default _imports;

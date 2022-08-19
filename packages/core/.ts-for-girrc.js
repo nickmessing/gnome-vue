@@ -4,7 +4,7 @@ module.exports = {
   verbose: true,
   environments: ['gjs'],
   outdir: 'src/generated',
-  modules: ['Gtk-4.0'],
+  modules: ['Adw-1'],
   ignore: [],
   useNamespace: true,
   buildType: 'lib',

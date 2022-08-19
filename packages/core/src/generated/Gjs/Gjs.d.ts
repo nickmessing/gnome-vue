@@ -1,5 +1,42 @@
-import GObject from "./GObject-2.0";
-import GLib from "./GLib-2.0";
+import GObject from "./GObject-2.0.js";
+import GLib from "./GLib-2.0.js";
+
+// https://gitlab.gnome.org/GNOME/gjs/-/blob/1.72.0/modules/script/package.js
+export namespace Package {
+  /**
+   * Although there are references in the documentation of more properties that
+   * this object should accepts, only the following are actually used in the init code,
+   * and all the other have their values derived from them.
+   */
+  interface PackageInitParams {
+    name: string;
+    version: string;
+    prefix: string;
+    libdir: string;
+  }
+
+  export const name: string | undefined;
+  export const version: string | undefined;
+  export const prefix: string | undefined;
+  export const datadir: string | undefined;
+  export const libdir: string | undefined;
+  export const pkgdatadir: string | undefined;
+  export const pkglibdir: string | undefined;
+  export const moduledir: string | undefined;
+  export const localedir: string | undefined;
+
+  export function init(params: PackageInitParams): void;
+  export function run(module: { main: (argv: string[]) => void }): void;
+  /** shortcut to init+run */
+  export function start(params: PackageInitParams): void;
+  export function require(libs: Record<string, string>): void;
+  export function requireSymbol(lib: string, ver: string, symbol: string): void;
+  export function checkSymbol(lib: string, ver: string, symbol: string): void;
+  export function initGettext(): void;
+  /** @deprecated Use JS string interpolation */
+  export function initFormat(): void;
+  export function initSubmodule(module: string): void;
+}
 
 export namespace System {
   export const programInvocationName: string;
@@ -118,4 +155,8 @@ export namespace Mainloop {
   ): any;
   export function source_remove(id: any): any;
   export function run(name: string): void;
+}
+
+export namespace Signals {
+  export function addSignalMethods(proto: object): void;
 }
