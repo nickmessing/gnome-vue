@@ -1,102 +1,125 @@
-import Gdk from '@/generated/Gjs/Gdk-4.0'
+import GObject from '@/generated/Gjs/GObject-2.0'
+import { Gtk } from '../../generated/Gjs/Gtk-4.0'
 import { ROptions } from '../types'
 
-export type ClassList = string | ClassList[] | Record<string, boolean>
-
-export const processClasses = (classes: ClassList): string[] => {
-  if (Array.isArray(classes)) {
-    return classes.reduce<string[]>((acc, classList) => acc.concat(processClasses(classList)), [])
-  } else if (typeof classes === 'string') {
-    return classes.split(' ')
-  } else {
-    return Object.keys(classes).filter(key => classes[key])
-  }
-}
-
-export const processValue = (propDetails: PropDeclaration<any, any, any>, value: any) => {
-  if (propDetails.type === Type.Boolean) {
-    return value !== false
-  } else if (propDetails.type === Type.ClassArray) {
-    return processClasses(value)
-  } else if (propDetails.type === Type.Cursor) {
-    return Gdk.Cursor.new_from_name(value, null)
-  } else {
-    return value
-  }
-}
+type VNodeProps = Parameters<ROptions['createElement']>[3]
 
 export enum Type {
-  Cursor = 'Cursor',
+  String = 'String',
   Boolean = 'Boolean',
-  ClassArray = 'ClassArray',
+  Number = 'Number',
+  Object = 'Object',
+  StringArray = 'StringArray',
 }
 
-export type PropDeclaration<
-  WidgetInstanceType extends {},
-  ConstructorProperties extends {},
-  K extends keyof ConstructorProperties,
-> = {
-  key: K
+export type ElementPropertyDescriptor = {
+  key: string
   type: Type
-  setter: K extends string
-    ? `set_${K}` extends keyof WidgetInstanceType
-      ? `set_${K}`
-      : keyof WidgetInstanceType
-    : keyof WidgetInstanceType
-  default?: ConstructorProperties[K]
+  setter: string
 }
 
-export type PropsDeclaration<WidgetInstanceType extends {}, ConstructorProperties extends {}> = Record<
-  string,
-  PropDeclaration<WidgetInstanceType, ConstructorProperties, keyof ConstructorProperties>
->
-
-type PropertiesDefinition<WidgetInstanceType extends {}, ConstructorProperties extends {}> = {
-  getConstructorProperties: (vnodeProps: Parameters<ROptions['createElement']>[3]) => ConstructorProperties
-  patchProperty: (el: WidgetInstanceType, key: string, prevValue: any, nextValue: any) => boolean
+export type DefineElementOptions = {
+  tagName: string
+  constructorClass: typeof Gtk.Widget
+  parentElementDefinition?: ElementDefinition
+  props: Record<string, ElementPropertyDescriptor>
 }
 
-export const defineProperties = <WidgetInstanceType extends {}, ConstructorProperties extends {}>(
-  props: PropsDeclaration<WidgetInstanceType, ConstructorProperties>,
-  parentDefinition?: PropertiesDefinition<any, any>,
-): PropertiesDefinition<WidgetInstanceType, ConstructorProperties> => ({
-  getConstructorProperties: vnodeProps => {
-    const constructorProperties: Record<string, any> = parentDefinition
-      ? parentDefinition.getConstructorProperties(vnodeProps)
-      : {}
+export type ElementDefinition = DefineElementOptions & {
+  createProperties: (vnodeProps?: VNodeProps) => Record<string, any>
+  patchProperty: (el: any, key: string, prevValue: any, nextValue: any) => boolean
+  createElement: (vnodeProps?: VNodeProps) => Gtk.Widget
+}
 
-    if (vnodeProps != null) {
-    }
+type EventHandledWidget = Gtk.Widget & {
+  _eventHandlersIds?: Record<string, Map<any, number>>
+}
 
-    for (const [key, prop] of Object.entries(props)) {
-      const propDetails = prop as PropDeclaration<
-        WidgetInstanceType,
-        ConstructorProperties,
-        keyof ConstructorProperties
-      >
-      if (vnodeProps != null && key in vnodeProps) {
-        constructorProperties[propDetails.key as string] = processValue(propDetails, vnodeProps[key])
-      } else if (propDetails.default != null) {
-        constructorProperties[propDetails.key as string] = propDetails.default
+export const defineElement = ({
+  tagName,
+  constructorClass,
+  props,
+  parentElementDefinition,
+}: DefineElementOptions): ElementDefinition => {
+  const createProperties: ElementDefinition['createProperties'] = vnodeProps => {
+    const properties = parentElementDefinition ? parentElementDefinition.createProperties(vnodeProps) : {}
+
+    for (const key in vnodeProps) {
+      if (key in props) {
+        const descriptor = props[key]
+        properties[descriptor.key] = vnodeProps[key]
+      } else if (key === 'class') {
+        properties.css_classes = vnodeProps[key].split(' ')
+      } else if (!(key in properties) && !key.startsWith('on') && key !== 'key' && key !== 'ref' && key !== 'ref_key') {
+        // log(`Unknown property "${key}" for element "${tagName}"`)
       }
     }
 
-    return constructorProperties as ConstructorProperties
-  },
+    return properties
+  }
 
-  patchProperty: (el, key, prevValue, nextValue) => {
-    const patched = parentDefinition?.patchProperty(el, key, prevValue, nextValue)
-    if (patched) {
-      return patched
-    }
-
-    if (key in props) {
-      const propDetails = props[
-        key as keyof PropsDeclaration<WidgetInstanceType, ConstructorProperties>
-      ] as PropDeclaration<WidgetInstanceType, ConstructorProperties, keyof ConstructorProperties>
-      ;(el as any)[propDetails.setter](processValue(propDetails, nextValue))
+  const patchProperty: ElementDefinition['patchProperty'] = (el, key, prevValue, nextValue) => {
+    const setParent = parentElementDefinition && parentElementDefinition.patchProperty(el, key, prevValue, nextValue)
+    if (setParent) {
       return true
     }
+
+    const propDetails = props[key]
+    if (propDetails) {
+      const setter = propDetails.setter
+      if (setter in el) {
+        el[setter](nextValue)
+        return true
+      }
+    } else if (key === 'class') {
+      el.set_css_classes(nextValue.split(' '))
+      return true
+    } else if (key.startsWith('on')) {
+      const widget = el as EventHandledWidget
+      if (widget._eventHandlersIds == null) {
+        widget._eventHandlersIds = {}
+      }
+
+      const eventName = key[2].toLowerCase() + key.substring(3)
+      if (prevValue != null) {
+        const handlersIds = widget._eventHandlersIds[eventName]
+        if (handlersIds) {
+          const id = handlersIds.get(prevValue)
+          if (id != null) {
+            widget.disconnect(id)
+          }
+        }
+      }
+      if (nextValue != null) {
+        const id = widget.connect(eventName, nextValue)
+        if (widget._eventHandlersIds[eventName] == null) {
+          widget._eventHandlersIds[eventName] = new Map()
+        }
+        widget._eventHandlersIds[eventName].set(nextValue, id)
+      }
+      return true
+    } else if (key !== 'key' && key !== 'ref' && key !== 'ref_key') {
+      // log(`Unknown property "${key}" for element "${tagName}" (prevValue: ${prevValue}, nextValue: ${nextValue})`)
+    }
     return false
-  },
-})
+  }
+
+  const createElement: ElementDefinition['createElement'] = vnodeProps => {
+    const initialProps = createProperties(vnodeProps)
+    const instance = new constructorClass(initialProps)
+    if (initialProps.visible !== false) {
+      instance.show()
+    }
+    return instance
+  }
+
+  return {
+    tagName,
+    constructorClass,
+    props,
+    parentElementDefinition,
+    createProperties,
+    patchProperty,
+    createElement,
+  }
+}

@@ -20,6 +20,13 @@ export const insert: ROptions['insert'] = (el, parent, anchor) => {
       }
       return parent.set_content(el)
     }
+  } else if (parent instanceof Gtk.Window) {
+    if (el instanceof Gtk.Widget) {
+      if (parent.get_child() != null) {
+        throw 'ApplicationWindow can only have a single child'
+      }
+      return parent.set_child(el)
+    }
   } else if (parent instanceof Gtk.Box) {
     if (el instanceof Gtk.Widget) {
       if (anchor == null) {
@@ -27,6 +34,16 @@ export const insert: ROptions['insert'] = (el, parent, anchor) => {
       } else {
         if (anchor instanceof Gtk.Widget) {
           return parent.insert_child_after(el, anchor.get_prev_sibling())
+        }
+      }
+    }
+  } else if (parent instanceof Gtk.Grid) {
+    if (el instanceof Gtk.Widget) {
+      if (anchor == null) {
+        return parent.attach(el, 0, 0, 1, 1)
+      } else {
+        if (anchor instanceof Gtk.Widget) {
+          return parent.attach_next_to(el, anchor, Gtk.PositionType.BOTTOM, 1, 1)
         }
       }
     }

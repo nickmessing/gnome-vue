@@ -1,22 +1,29 @@
 import Adw from '@/generated/Gjs/Adw-1'
 import Gtk from '@/generated/Gjs/Gtk-4.0'
-import { gtkButtonPropsHandlers } from './elements/gtk/button'
+import { keyedByClass } from './elements'
 import { ROptions } from './types'
 
-export const patchProp: ROptions['patchProp'] = (el, key, prevValue, nextValue) => {
-  if (el instanceof Adw.ApplicationWindow) {
-    if (key === 'title') {
-      return el.set_title(nextValue)
-    }
-  } else if (el instanceof Gtk.Button) {
-    if (key === 'onClicked') {
-      return el.connect('clicked', nextValue)
-    }
-    const patched = gtkButtonPropsHandlers.patchProperty(el, key, prevValue, nextValue)
-    if (patched) {
-      return
-    }
+const createEventHandler = (value: (...args: any[]) => any) => {
+  const listeners = new Set<(...args: any[]) => any>()
+  const addListener = (listener: (...args: any[]) => any) => {
+    listeners.add(listener)
   }
-  log(`Cant patch prop "${key}" for element "${el.constructor.name}" yet`)
-  return
+  const removeListener = (listener: (...args: any[]) => any) => {
+    listeners.delete(listener)
+  }
+
+  const fn = (...args: any[]) => {
+    value(...args)
+  }
+  fn.addListener = addListener
+  fn.removeListener = removeListener
+  return fn
+}
+export const patchProp: ROptions['patchProp'] = (el, key, prevValue, nextValue) => {
+  const definition = keyedByClass.get(el.constructor as any)
+  if (!definition) {
+    log(`Cant patch prop "${key}" for element "${el.constructor.name}" yet`)
+  } else {
+    definition?.patchProperty(el, key, prevValue, nextValue)
+  }
 }
